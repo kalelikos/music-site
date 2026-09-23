@@ -3,76 +3,303 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Моя Музыка</title>
+  <title>SoundWave — Музыкальный Хаб</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background-color: #121212; color: #fff; padding: 20px; }
-    .container { max-width: 800px; margin: 0 auto; }
-    
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-    h1 { color: #1DB954; font-size: 26px; }
-    
-    .card { background: #1e1e1e; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-    
-    .form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
-    textarea, input[type="text"], input[type="password"] {
-      background: #2a2a2a; border: 1px solid #3e3e3e; border-radius: 8px;
-      color: #fff; padding: 12px; font-size: 14px; width: 100%; outline: none;
+    :root {
+      --bg: #090a0f;
+      --card-bg: rgba(22, 24, 34, 0.75);
+      --card-border: rgba(255, 255, 255, 0.07);
+      --accent: #1ed760;
+      --accent-glow: rgba(30, 215, 96, 0.35);
+      --accent-hover: #22e668;
+      --text: #ffffff;
+      --text-muted: #8b8f9e;
+      --danger: #ff4d4d;
+      --danger-bg: rgba(255, 77, 77, 0.12);
     }
-    textarea:focus, input:focus { border-color: #1DB954; }
-    
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(30, 215, 96, 0.07) 0%, transparent 45%),
+        radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 45%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 30px 16px;
+      line-height: 1.5;
+    }
+
+    .container { max-width: 820px; margin: 0 auto; }
+
+    /* Шапка сайта */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 35px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .logo-block { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #1ed760, #108538);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 18px var(--accent-glow);
+    }
+    h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+
+    /* Кнопки */
     button {
-      background: #1DB954; color: #000; font-weight: bold; border: none;
-      border-radius: 8px; padding: 12px 20px; cursor: pointer; transition: 0.2s;
+      font-family: inherit;
+      border-radius: 10px;
+      padding: 12px 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
-    button:hover { background: #1ed760; }
-    .btn-secondary { background: #333; color: #fff; }
-    .btn-secondary:hover { background: #444; }
-    .btn-delete { background: #e91429; color: #fff; padding: 6px 12px; font-size: 12px; }
 
-    #settingsPanel { display: none; margin-bottom: 20px; border-left: 3px solid #1DB954; }
-    
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(30, 215, 96, 0.45);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(10px);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Карточки с Glassmorphism */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .form-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    textarea, input[type="text"], input[type="password"] {
+      width: 100%;
+      background: rgba(10, 11, 16, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: #fff;
+      padding: 14px 16px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+      margin-bottom: 12px;
+    }
+    textarea:focus, input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(30, 215, 96, 0.15);
+      background: rgba(10, 11, 16, 0.85);
+    }
+
+    /* Статус сохранения */
+    .status-msg {
+      font-size: 13px;
+      margin-top: 10px;
+      min-height: 18px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Список треков */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 32px 0 16px 4px;
+    }
+    .section-title { font-size: 17px; font-weight: 600; color: #d0d2dc; }
+    .track-counter {
+      background: rgba(255,255,255,0.06);
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      color: var(--text-muted);
+    }
+
     .track-card {
-      background: #181818; border-radius: 12px; padding: 15px; margin-bottom: 15px;
-      display: flex; flex-direction: column; gap: 10px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 18px;
+      transition: all 0.3s ease;
     }
-    .track-header { display: flex; justify-content: space-between; align-items: center; }
-    .track-title { font-size: 14px; color: #aaa; }
-    iframe { border: none; border-radius: 12px; width: 100%; }
+    .track-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+    }
+    .track-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+    .track-name { font-size: 15px; font-weight: 600; color: #fff; }
+    .btn-delete {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid rgba(255, 77, 77, 0.2);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    .btn-delete:hover {
+      background: var(--danger);
+      color: #fff;
+    }
 
-    .status { font-size: 13px; color: #aaa; margin-top: 5px; font-weight: 500; }
+    iframe { border: none; border-radius: 12px; width: 100%; display: block; }
+
+    /* Пустой список */
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--text-muted);
+    }
+    .empty-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.6; }
+
+    /* Модальное окно настроек */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: #151722;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      max-width: 480px;
+      width: 100%;
+      padding: 26px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+      animation: modalIn 0.25s ease;
+    }
+    @keyframes modalIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      padding: 4px;
+    }
+    .close-btn:hover { color: #fff; }
   </style>
 </head>
 <body>
 
 <div class="container">
   <header>
-    <h1>🎵 Мой Музыкальный Хаб</h1>
-    <button class="btn-secondary" onclick="toggleSettings()">⚙️ GitHub Настройки</button>
+    <div class="logo-block">
+      <div class="logo-icon">🎧</div>
+      <div>
+        <h1>SoundWave</h1>
+      </div>
+    </div>
+    <button class="btn-secondary" onclick="openSettings()">⚙️ Настройки</button>
   </header>
 
-  <div class="card" id="settingsPanel">
-    <h3>Синхронизация с GitHub</h3>
-    <p style="font-size: 13px; color: #aaa; margin: 8px 0 15px;">
-      Токен хранится локально в вашем браузере.
-    </p>
-    <div class="form-group">
-      <input type="text" id="ghRepo" placeholder="kalelikos/music-site">
-      <input type="password" id="ghToken" placeholder="GitHub PAT (github_pat_...)">
-      <button onclick="saveSettings()">Сохранить настройки подключения</button>
-    </div>
+  <!-- Форма добавления трека -->
+  <div class="glass-card">
+    <div class="form-title">⚡ Добавить новый трек</div>
+    <textarea id="embedInput" rows="2" placeholder="Вставь ссылку на песню Spotify или код <iframe>"></textarea>
+    <input type="text" id="trackTitle" placeholder="Название или заметка (например: Любимый трек)">
+    <button class="btn-primary" style="width: 100%;" onclick="addTrack()">➕ Опубликовать трек</button>
+    <div id="statusMsg" class="status-msg"></div>
   </div>
 
-  <div class="card">
-    <div class="form-group">
-      <textarea id="embedInput" rows="3" placeholder="Вставь сюда код <iframe> от Spotify или ссылку"></textarea>
-      <input type="text" id="trackTitle" placeholder="Подпись или название (необязательно)">
-      <button onclick="addTrack()">➕ Добавить трек на сайт</button>
-      <div id="statusMsg" class="status"></div>
-    </div>
+  <!-- Список треков -->
+  <div class="section-header">
+    <span class="section-title">Плейлист</span>
+    <span class="track-counter" id="counter">0 треков</span>
   </div>
 
   <div id="tracksList"></div>
+</div>
+
+<!-- Модальное окно настроек GitHub -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="font-size: 18px;">Подключение к GitHub</h3>
+      <button class="close-btn" onclick="closeSettings()">✕</button>
+    </div>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+      Токен безопасно хранится в вашем браузере и используется для отправки коммитов.
+    </p>
+    <input type="text" id="ghRepo" placeholder="kalelikos/music-site">
+    <input type="password" id="ghToken" placeholder="GitHub PAT (github_pat_...)">
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+      <button class="btn-primary" style="flex: 1;" onclick="saveSettings()">Сохранить</button>
+      <button class="btn-secondary" onclick="closeSettings()">Отмена</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -85,22 +312,25 @@
     await loadTracks();
   });
 
-  function toggleSettings() {
-    const el = document.getElementById('settingsPanel');
-    el.style.display = el.style.display === 'block' ? 'none' : 'block';
-  }
+  function openSettings() { document.getElementById('settingsModal').classList.add('active'); }
+  function closeSettings() { document.getElementById('settingsModal').classList.remove('active'); }
 
   function saveSettings() {
     localStorage.setItem('gh_repo', document.getElementById('ghRepo').value.trim());
     localStorage.setItem('gh_token', document.getElementById('ghToken').value.trim());
-    alert('Настройки сохранены!');
-    toggleSettings();
+    closeSettings();
+    showStatus('✅ Настройки сохранены!');
     loadTracks();
   }
 
-  // Загружаем треки мгновенно (из кэша, потом через GitHub API напрямую)
+  function showStatus(text, isError = false) {
+    const el = document.getElementById('statusMsg');
+    el.innerText = text;
+    el.style.color = isError ? 'var(--danger)' : 'var(--accent)';
+  }
+
   async function loadTracks() {
-    // 1. Мгновенно отображаем сохраненное в браузере (чтобы не пропадало при F5)
+    // 1. Показываем мгновенно из локальной памяти браузера
     const cached = localStorage.getItem('local_tracks');
     if (cached) {
       try {
@@ -112,7 +342,7 @@
     const repo = localStorage.getItem('gh_repo') || 'kalelikos/music-site';
     const token = localStorage.getItem('gh_token');
 
-    // 2. Запрашиваем актуальный tracks.json напрямую с серверов GitHub API
+    // 2. Подгружаем актуальные данные напрямую с GitHub API
     try {
       const headers = { 'Accept': 'application/vnd.github.v3+json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -120,7 +350,6 @@
       const res = await fetch(`https://api.github.com/repos/${repo}/contents/${GITHUB_FILE_PATH}?t=${Date.now()}`, { headers });
       if (res.ok) {
         const fileData = await res.json();
-        // Раскодируем base64 с поддержкой UTF-8
         const decoded = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
         tracks = JSON.parse(decoded);
         localStorage.setItem('local_tracks', JSON.stringify(tracks));
@@ -128,10 +357,10 @@
         return;
       }
     } catch (e) {
-      console.warn('API недоступен, пробуем статический файл...', e);
+      console.warn('API запрос не удался, пробуем статичный файл');
     }
 
-    // 3. Запасной вариант (для гостей без токена через Pages)
+    // 3. Запасной вариант для внешних гостей
     try {
       const res = await fetch(`./${GITHUB_FILE_PATH}?t=${Date.now()}`);
       if (res.ok) {
@@ -143,14 +372,26 @@
 
   function renderTracks() {
     const container = document.getElementById('tracksList');
+    const counter = document.getElementById('counter');
+    counter.innerText = `${tracks.length} треков`;
     container.innerHTML = '';
+
+    if (tracks.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🎵</div>
+          <p>В твоем хабе пока нет треков.<br>Добавь первую песню выше!</p>
+        </div>
+      `;
+      return;
+    }
 
     tracks.forEach((track, index) => {
       const card = document.createElement('div');
       card.className = 'track-card';
       card.innerHTML = `
         <div class="track-header">
-          <span class="track-title">${track.title || 'Трек #' + (tracks.length - index)}</span>
+          <span class="track-name">${track.title || 'Трек #' + (tracks.length - index)}</span>
           <button class="btn-delete" onclick="deleteTrack(${index})">Удалить</button>
         </div>
         <iframe src="${track.url}" height="${track.height || '352'}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
@@ -185,7 +426,7 @@
     const url = parseMediaInput(input);
 
     if (!url) {
-      alert('Вставь ссылку или <iframe> код трека!');
+      alert('Пожалуйста, вставь ссылку Spotify или код <iframe>');
       return;
     }
 
@@ -204,7 +445,7 @@
   }
 
   async function deleteTrack(index) {
-    if (!confirm('Удалить этот трек?')) return;
+    if (!confirm('Удалить этот трек из плейлиста?')) return;
     tracks.splice(index, 1);
     renderTracks();
     await syncWithGitHub();
@@ -213,17 +454,15 @@
   async function syncWithGitHub() {
     const repo = localStorage.getItem('gh_repo') || 'kalelikos/music-site';
     const token = localStorage.getItem('gh_token');
-    const status = document.getElementById('statusMsg');
 
-    // Сохраняем в кэш браузера немедленно
     localStorage.setItem('local_tracks', JSON.stringify(tracks));
 
     if (!token) {
-      status.innerText = '⚠️ Сохранено локально! Введи токен в "Настройках", чтобы сохранять на GitHub.';
+      showStatus('⚠️ Сохранено локально! Настрой GitHub для общего доступа.');
       return;
     }
 
-    status.innerText = '⏳ Отправка на GitHub...';
+    showStatus('⏳ Синхронизация с GitHub...');
 
     try {
       const apiUrl = `https://api.github.com/repos/${repo}/contents/${GITHUB_FILE_PATH}`;
@@ -233,7 +472,6 @@
         'Content-Type': 'application/json'
       };
 
-      // 1. Получаем текущий SHA файла
       let sha = null;
       const getRes = await fetch(apiUrl + `?t=${Date.now()}`, { headers });
       if (getRes.ok) {
@@ -241,30 +479,27 @@
         sha = fileData.sha;
       }
 
-      // 2. Кодируем новый tracks.json
       const jsonStr = JSON.stringify(tracks, null, 2);
       const base64Content = btoa(unescape(encodeURIComponent(jsonStr)));
 
-      // 3. Отправляем в репозиторий
       const putRes = await fetch(apiUrl, {
         method: 'PUT',
         headers: headers,
         body: JSON.stringify({
-          message: 'Update tracks from site UI',
+          message: 'Update music list via SoundWave UI',
           content: base64Content,
           sha: sha || undefined
         })
       });
 
       if (putRes.ok) {
-        status.innerText = '✅ Успешно записано в GitHub!';
+        showStatus('✅ Сохранено на GitHub!');
       } else {
         const err = await putRes.json();
-        alert('Ошибка сохранения GitHub: ' + (err.message || 'Проверь права токена'));
-        status.innerText = `❌ Ошибка: ${err.message}`;
+        showStatus('❌ Ошибка GitHub: ' + err.message, true);
       }
     } catch (e) {
-      status.innerText = `❌ Ошибка сети: ${e.message}`;
+      showStatus('❌ Ошибка сети: ' + e.message, true);
     }
   }
 </script>
