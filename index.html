@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Моя Музыка</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background-color: #121212; color: #fff; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    h1 { color: #1DB954; font-size: 26px; }
+    
+    .card { background: #1e1e1e; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    
+    /* Форма ввода */
+    .form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+    textarea, input[type="text"] {
+      background: #2a2a2a; border: 1px solid #3e3e3e; border-radius: 8px;
+      color: #fff; padding: 12px; font-size: 14px; width: 100%; outline: none;
+    }
+    textarea:focus, input:focus { border-color: #1DB954; }
+    
+    button {
+      background: #1DB954; color: #000; font-weight: bold; border: none;
+      border-radius: 8px; padding: 12px 20px; cursor: pointer; transition: 0.2s;
+    }
+    button:hover { background: #1ed760; }
+    .btn-secondary { background: #333; color: #fff; }
+    .btn-secondary:hover { background: #444; }
+    .btn-delete { background: #e91429; color: #fff; padding: 6px 12px; font-size: 12px; }
+
+    /* Настройки GitHub */
+    #settingsPanel { display: none; margin-bottom: 20px; border-left: 3px solid #1DB954; }
+    
+    /* Сетка плееров */
+    .track-card {
+      background: #181818; border-radius: 12px; padding: 15px; margin-bottom: 15px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .track-header { display: flex; justify-content: space-between; align-items: center; }
+    .track-title { font-size: 14px; color: #aaa; }
+    iframe { border: none; border-radius: 12px; width: 100%; }
+
+    .status { font-size: 13px; color: #888; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>🎵 Мой Музыкальный Хаб</h1>
+    <button class="btn-secondary" onclick="toggleSettings()">⚙️ GitHub Настройки</button>
+  </header>
+
+  <!-- Панель настроек GitHub -->
+  <div class="card" id="settingsPanel">
+    <h3>Синхронизация с GitHub</h3>
+    <p style="font-size: 13px; color: #aaa; margin: 8px 0 15px;">
+      Токен хранится только в твоем браузере (LocalStorage). Обычные посетители не увидят его.
+    </p>
+    <div class="form-group">
+      <input type="text" id="ghRepo" placeholder="Репозиторий: имя_пользователя/имя_репозитория (напр. alex/music)">
+      <input type="password" id="ghToken" placeholder="GitHub Personal Access Token (PAT)">
+      <button onclick="saveSettings()">Сохранить настройки подключения</button>
+    </div>
+  </div>
+
+  <!-- Форма добавления -->
+  <div class="card">
+    <div class="form-group">
+      <textarea id="embedInput" rows="3" placeholder="Вставь сюда код <iframe> от Spotify/SoundCloud или прямую ссылку Spotify / YouTube"></textarea>
+      <input type="text" id="trackTitle" placeholder="Подпись или название (необязательно)">
+      <button onclick="addTrack()">➕ Добавить трек на сайт</button>
+      <div id="statusMsg" class="status"></div>
+    </div>
+  </div>
+
+  <!-- Список треков -->
+  <div id="tracksList"></div>
+</div>
+
+<script>
+  const GITHUB_FILE_PATH = 'tracks.json';
+  let tracks = [];
+
+  // Загрузка настроек и треков при старте
+  window.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('ghRepo').value = localStorage.getItem('gh_repo') || '';
+    document.getElementById('ghToken').value = localStorage.getItem('gh_token') || '';
+    await loadTracks();
+  });
+
+  function toggleSettings() {
+    const el = document.getElementById('settingsPanel');
+    el.style.display = el.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function saveSettings() {
+    localStorage.setItem('gh_repo', document.getElementById('ghRepo').value.trim());
+    localStorage.setItem('gh_token', document.getElementById('ghToken').value.trim());
+    alert('Настройки сохранены!');
+    toggleSettings();
+    loadTracks();
+  }
+
+  // Загружаем треки (из tracks.json на репозитории или локально)
+  async function loadTracks() {
+    try {
+      const res = await fetch(`./${GITHUB_FILE_PATH}?t=${Date.now()}`);
+      if (res.ok) {
+        tracks = await res.json();
+      } else {
+        // Резервная загрузка из localStorage, если tracks.json еще не создан
+        tracks = JSON.parse(localStorage.getItem('local_tracks') || '[]');
+      }
+    } catch (e) {
+      tracks = JSON.parse(localStorage.getItem('local_tracks') || '[]');
+    }
+    renderTracks();
+  }
+
+  // Отрисовка списка
+  function renderTracks() {
+    const container = document.getElementById('tracksList');
+    container.innerHTML = '';
+
+    tracks.forEach((track, index) => {
+      const card = document.createElement('div');
+      card.className = 'track-card';
+      card.innerHTML = `
+        <div class="track-header">
+          <span class="track-title">${track.title || 'Трек #' + (tracks.length - index)}</span>
+          <button class="btn-delete" onclick="deleteTrack(${index})">Удалить</button>
+        </div>
+        <iframe src="${track.url}" height="${track.height || '352'}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  // Преобразование ссылки / iframe в чистый src
+  function parseMediaInput(input) {
+    input = input.trim();
+
+    // Если вставили iframe: достаем src="..."
+    if (input.includes('<iframe')) {
+      const match = input.match(/src=["']([^"']+)["']/);
+      return match ? match[1] : null;
+    }
+
+    // Обычная ссылка Spotify (track/album/playlist) -> превращаем в embed
+    if (input.includes('open.spotify.com/')) {
+      return input.replace('open.spotify.com/', 'open.spotify.com/embed/');
+    }
+
+    // YouTube ссылки -> превращаем в embed
+    if (input.includes('youtube.com/watch?v=')) {
+      const id = new URL(input).searchParams.get('v');
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    if (input.includes('youtu.be/')) {
+      const id = input.split('youtu.be/')[1]?.split('?')[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+
+    return input; // возвращаем как есть, если это уже URL
+  }
+
+  async function addTrack() {
+    const input = document.getElementById('embedInput').value;
+    const title = document.getElementById('trackTitle').value;
+    const url = parseMediaInput(input);
+
+    if (!url) {
+      alert('Пожалуйста, вставь валидный iframe или ссылку');
+      return;
+    }
+
+    const newTrack = {
+      url: url,
+      title: title || '',
+      height: url.includes('spotify') ? '352' : (url.includes('youtube') ? '380' : '160')
+    };
+
+    tracks.unshift(newTrack); // добавляем наверх
+    renderTracks();
+    document.getElementById('embedInput').value = '';
+    document.getElementById('trackTitle').value = '';
+
+    await syncWithGitHub();
+  }
+
+  async function deleteTrack(index) {
+    if (!confirm('Удалить этот трек?')) return;
+    tracks.splice(index, 1);
+    renderTracks();
+    await syncWithGitHub();
+  }
+
+  // Синхронизация с GitHub через API
+  async function syncWithGitHub() {
+    const repo = localStorage.getItem('gh_repo');
+    const token = localStorage.getItem('gh_token');
+    const status = document.getElementById('statusMsg');
+
+    // Если токен не настроен — сохраняем локально для тестов
+    if (!repo || !token) {
+      localStorage.setItem('local_tracks', JSON.stringify(tracks));
+      status.innerText = 'Сохранено локально в браузере (настрой GitHub для общего доступа).';
+      return;
+    }
+
+    status.innerText = 'Сохранение на GitHub...';
+
+    try {
+      const apiUrl = `https://api.github.com/repos/${repo}/contents/${GITHUB_FILE_PATH}`;
+
+      // 1. Получаем SHA существующего tracks.json (нужен GitHub API для перезаписи)
+      let sha = null;
+      const getRes = await fetch(apiUrl, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (getRes.ok) {
+        const fileData = await getRes.json();
+        sha = fileData.sha;
+      }
+
+      // 2. Кодируем JSON в Base64 с поддержкой UTF-8
+      const jsonStr = JSON.stringify(tracks, null, 2);
+      const base64Content = btoa(unescape(encodeURIComponent(jsonStr)));
+
+      // 3. Отправляем PUT запрос
+      const putRes = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: 'Update tracks via Web UI',
+          content: base64Content,
+          sha: sha || undefined
+        })
+      });
+
+      if (putRes.ok) {
+        status.innerText = '✅ Успешно сохранено на GitHub! Изменения применены.';
+      } else {
+        const err = await putRes.json();
+        status.innerText = `Ошибка GitHub: ${err.message}`;
+      }
+    } catch (e) {
+      status.innerText = `Сетевая ошибка: ${e.message}`;
+    }
+  }
+</script>
+
+</body>
+</html>
